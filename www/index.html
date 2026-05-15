@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Bar Tycoon</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div id="app">
+
+    <!-- Header -->
+    <header id="header">
+      <div id="header-top">
+        <h1><img src="images/icon_1.png" alt="" style="height:1em;width:1em;object-fit:contain;vertical-align:-0.15em;margin-right:0.2em;"> Bar Tycoon</h1>
+        <div id="header-btns">
+          <button id="achievement-btn" aria-label="実績を見る"><img src="images/icon_2.png" alt="" style="height:1.2rem;width:1.2rem;object-fit:contain;"></button>
+          <button id="options-btn" aria-label="オプション"><img src="images/icon_3.png" alt="" style="height:1.2rem;width:1.2rem;object-fit:contain;"></button>
+        </div>
+      </div>
+      <div id="money-display">
+        <span id="money-label">所持金</span>
+        <span id="money-amount">¥0</span>
+      </div>
+      <div id="income-display">
+        <span id="income-per-sec">¥0 / 秒</span>
+        <span id="bp-header-display">BP: <strong id="bp-header-val">0</strong></span>
+      </div>
+    </header>
+
+    <!-- Main scroll area -->
+    <main id="main">
+      <section id="click-section">
+        <img id="rank-bg" src="images/backgraund_1.png" alt="">
+        <img id="kanban-img" src="" alt="">
+        <div id="click-area">
+          <div id="glass-wrapper">
+            <div id="glass-glow"></div>
+            <div id="cocktail-glass" role="button" aria-label="カクテルを作る" tabindex="0">
+              <img id="glass-img" src="images/glass_1b.png" alt="カクテルグラス">
+            </div>
+          </div>
+          <div id="rank-badge">Rank 1</div>
+          <p id="click-hint">タップしてカクテルを作ろう</p>
+          <p id="per-click-label">1クリック: <span id="per-click-value">¥1</span></p>
+        </div>
+        <div id="floats"></div>
+      </section>
+    </main>
+
+    <!-- ===== Shop Panels ===== -->
+
+    <!-- Panel 1: バーテン雇用 -->
+    <div class="shop-panel hidden" id="panel-bartender">
+      <div class="panel-backdrop"></div>
+      <div class="panel-sheet">
+        <div class="panel-header">
+          <h2><img src="images/icon_4.png" alt="" style="height:1em;width:1em;object-fit:contain;vertical-align:-0.1em;margin-right:0.2em;"> バーテン雇用</h2>
+          <button class="panel-close" aria-label="閉じる">✕</button>
+        </div>
+        <div class="panel-body">
+          <div class="buy-mode-wrap">
+            <span class="buy-mode-label">購入数</span>
+            <div class="buy-mode-buttons">
+              <button class="buy-mode-btn active" data-mode="1">×1</button>
+              <button class="buy-mode-btn" data-mode="10">×10</button>
+              <button class="buy-mode-btn" data-mode="max">×MAX</button>
+            </div>
+          </div>
+          <div id="bartender-list" class="item-list"></div>
+          <div id="kanban-section">
+            <h4 class="category-label" style="margin-top:16px;border-top:1px solid var(--border);padding-top:12px;">看板娘</h4>
+            <div id="kanban-list" class="item-list"></div>
+            <div id="kanban-selector" class="hidden">
+              <h4 class="category-label kanban-selector-title">表示設定</h4>
+              <div id="kanban-radio-group"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Panel 2: スタッフ強化 -->
+    <div class="shop-panel hidden" id="panel-staff">
+      <div class="panel-backdrop"></div>
+      <div class="panel-sheet">
+        <div class="panel-header">
+          <h2><img src="images/icon_5.png" alt="" style="height:1em;width:1em;object-fit:contain;vertical-align:-0.1em;margin-right:0.2em;"> スタッフ強化</h2>
+          <button class="panel-close" aria-label="閉じる">✕</button>
+        </div>
+        <div class="panel-body">
+          <div id="staff-upgrade-list" class="item-list"></div>
+          <p id="staff-empty-msg" class="empty-msg">バーテンダーを雇用すると強化できます</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Panel 3: メニュー強化 -->
+    <div class="shop-panel hidden" id="panel-menu">
+      <div class="panel-backdrop"></div>
+      <div class="panel-sheet">
+        <div class="panel-header">
+          <h2><img src="images/icon_6.png" alt="" style="height:1em;width:1em;object-fit:contain;vertical-align:-0.1em;margin-right:0.2em;"> メニュー強化</h2>
+          <button class="panel-close" aria-label="閉じる">✕</button>
+        </div>
+        <div class="panel-body">
+          <div class="buy-mode-wrap">
+            <span class="buy-mode-label">購入数</span>
+            <div class="buy-mode-buttons">
+              <button class="buy-mode-btn" data-mode="1">×1</button>
+              <button class="buy-mode-btn" data-mode="10">×10</button>
+              <button class="buy-mode-btn" data-mode="max">×MAX</button>
+            </div>
+          </div>
+          <div id="upgrade-list" class="item-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Panel 4: BARポイントショップ -->
+    <div class="shop-panel hidden" id="panel-bar">
+      <div class="panel-backdrop"></div>
+      <div class="panel-sheet">
+        <div class="panel-header">
+          <h2><img src="images/icon_7.png" alt="" style="height:1em;width:1em;object-fit:contain;vertical-align:-0.1em;margin-right:0.2em;"> BARポイントショップ</h2>
+          <button class="panel-close" aria-label="閉じる">✕</button>
+        </div>
+        <div class="panel-body">
+          <div id="bar-points-row">
+            <span class="bp-label">所持BARポイント</span>
+            <span id="bar-points-display" class="bp-value">0</span>
+            <span class="bp-unit-label">BP</span>
+          </div>
+          <h4 class="category-label">全体収入強化</h4>
+          <div id="bar-income-list" class="item-list"></div>
+          <h4 class="category-label" style="margin-top:8px">クリック強化</h4>
+          <div id="bar-click-list" class="item-list"></div>
+          <div id="rebirth-card">
+            <div id="rebirth-card-left">
+              <div id="rebirth-title"><img src="images/barpoint_11.png" alt="" style="height:1em;width:1em;object-fit:contain;vertical-align:-0.1em;margin-right:0.2em;"> 転生</div>
+              <div id="rebirth-subtitle">全てをリセットしてBARポイントを獲得</div>
+            </div>
+            <button id="rebirth-open-btn-shop">転生する</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <nav id="bottom-nav">
+      <button class="nav-btn" data-panel="panel-bartender">
+        <span class="nav-icon"><img src="images/icon_4.png" alt="" style="height:1.6rem;width:1.6rem;object-fit:contain;"></span>
+        <span class="nav-label">バーテン雇用</span>
+      </button>
+      <button class="nav-btn" data-panel="panel-staff">
+        <span class="nav-icon"><img src="images/icon_5.png" alt="" style="height:1.9rem;width:1.9rem;object-fit:contain;"></span>
+        <span class="nav-label">スタッフ強化</span>
+      </button>
+      <button class="nav-btn" data-panel="panel-menu">
+        <span class="nav-icon"><img src="images/icon_6.png" alt="" style="height:1.6rem;width:1.6rem;object-fit:contain;"></span>
+        <span class="nav-label">メニュー強化</span>
+      </button>
+      <button class="nav-btn" data-panel="panel-bar">
+        <span class="nav-icon"><img src="images/icon_7.png" alt="" style="height:1.6rem;width:1.6rem;object-fit:contain;"></span>
+        <span class="nav-label">BARポイント</span>
+      </button>
+    </nav>
+
+    <!-- ===== Modals ===== -->
+
+    <!-- Rebirth Confirm -->
+    <div id="rebirth-overlay" class="hidden" role="dialog" aria-modal="true">
+      <div id="rebirth-panel">
+        <div id="rebirth-panel-icon">♻️</div>
+        <h2>転生しますか？</h2>
+        <p id="rebirth-desc">所持金・スタッフ・強化がリセットされます。<br>BARポイントは引き継がれます。</p>
+        <div id="rebirth-pts-box">
+          <div class="rebirth-pts-row">
+            <span>今回獲得</span>
+            <span>+<strong id="rebirth-pts-earn">0</strong> BP</span>
+          </div>
+          <div class="rebirth-pts-row rebirth-pts-total-row">
+            <span>転生後の合計</span>
+            <span><strong id="rebirth-pts-total">0</strong> BP</span>
+          </div>
+        </div>
+        <p id="rebirth-need-note">※累計¥100万ごとに1BP獲得</p>
+        <div id="rebirth-btn-row">
+          <button id="rebirth-cancel-btn">キャンセル</button>
+          <button id="rebirth-confirm-btn">転生する</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Options Modal -->
+    <div id="options-overlay" class="hidden" role="dialog" aria-modal="true" aria-label="オプション">
+      <div id="options-panel">
+        <div id="options-header">
+          <h2><img src="images/icon_3.png" alt="" style="height:1em;width:1em;object-fit:contain;vertical-align:-0.1em;margin-right:0.2em;"> オプション</h2>
+          <button id="options-close" aria-label="閉じる">✕</button>
+        </div>
+        <div id="options-body">
+          <div class="option-row">
+            <span class="option-label"><img src="images/setting_1.png" alt="" style="height:1.2em;width:1.2em;object-fit:contain;vertical-align:-0.25em;margin-right:0.2em;"> BGM</span>
+            <label class="toggle-switch">
+              <input type="checkbox" id="opt-bgm" checked>
+              <span class="toggle-track"><span class="toggle-thumb"></span></span>
+            </label>
+          </div>
+          <div class="option-row">
+            <span class="option-label"><img src="images/setting_2.png" alt="" style="height:1.2em;width:1.2em;object-fit:contain;vertical-align:-0.25em;margin-right:0.2em;"> 効果音</span>
+            <label class="toggle-switch">
+              <input type="checkbox" id="opt-sfx" checked>
+              <span class="toggle-track"><span class="toggle-thumb"></span></span>
+            </label>
+          </div>
+          <div class="option-row option-row-col">
+            <span class="option-label"><img src="images/setting_3.png" alt="" style="height:1.2em;width:1.2em;object-fit:contain;vertical-align:-0.25em;margin-right:0.2em;"> 音量</span>
+            <div class="volume-wrap">
+              <span class="volume-icon">🔈</span>
+              <input type="range" id="opt-volume" min="0" max="100" value="50">
+              <span class="volume-icon">🔊</span>
+            </div>
+          </div>
+          <div class="option-reset-section">
+            <button id="data-reset-btn">データリセット</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Data Reset Confirm -->
+    <div id="data-reset-overlay" class="hidden" role="dialog" aria-modal="true">
+      <div id="data-reset-panel">
+        <div id="data-reset-icon">⚠️</div>
+        <p id="data-reset-desc">転生機能ではありません。<br>今までのすべての進行データが<br>削除されますがよろしいでしょうか？</p>
+        <div id="data-reset-btn-row">
+          <button id="data-reset-cancel-btn">いいえ、やめます</button>
+          <button id="data-reset-confirm-btn">はい、リセットします</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Achievement Modal -->
+    <div id="achievement-overlay" class="hidden" role="dialog" aria-modal="true" aria-label="実績">
+      <div id="achievement-panel">
+        <div id="achievement-header">
+          <h2><img src="images/icon_2.png" alt="" style="height:1em;width:1em;object-fit:contain;vertical-align:-0.1em;margin-right:0.2em;"> 実績</h2>
+          <button id="achievement-close" aria-label="閉じる">✕</button>
+        </div>
+        <div id="achievement-list"></div>
+      </div>
+    </div>
+
+    <!-- Offline earnings modal -->
+    <div id="offline-overlay" class="hidden" role="dialog" aria-modal="true">
+      <div id="offline-panel">
+        <div id="offline-icon">🌙</div>
+        <h2 id="offline-title">おかえりなさい！</h2>
+        <p id="offline-time"></p>
+        <div id="offline-amount"></div>
+        <button id="offline-close">受け取る</button>
+      </div>
+    </div>
+
+    <!-- Achievement unlock popup -->
+    <div id="achievement-popup" class="hidden">
+      <div id="achievement-popup-inner">
+        <span id="achievement-popup-icon"></span>
+        <div>
+          <div id="achievement-popup-label">実績解除！</div>
+          <div id="achievement-popup-name"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast notification -->
+    <div id="toast"></div>
+
+  </div>
+
+  <script src="game.js"></script>
+</body>
+</html>
