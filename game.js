@@ -842,6 +842,7 @@ function loadGame() {
       if (elapsed > 0 && state.incomePerSec > 0) {
         const bonus = state.incomePerSec * elapsed;
         addMoney(bonus);
+        saveGame();
         return { offlineBonus: bonus, elapsed };
       }
     }
@@ -1775,6 +1776,7 @@ document.addEventListener('visibilitychange', () => {
       if (elapsed >= 1 && state.incomePerSec > 0) {
         const bonus = state.incomePerSec * elapsed;
         addMoney(bonus);
+        saveGame();
         showOfflineModal(bonus, elapsed);
       }
       // tickの時間ずれをリセット

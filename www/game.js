@@ -20,7 +20,8 @@ let bgmAudio = new Audio(BGM_TRACKS[0]);
 bgmAudio.loop = true;
 let currentBgmIndex = 0;
 
-const sfxTap     = new Audio('sounds/glasstap_2.wav');
+const sfxTapPool = Array.from({ length: 3 }, () => new Audio('sounds/glasstap_2.wav'));
+let   sfxTapIdx  = 0;
 const sfxSpend   = new Audio('sounds/coinuse.wav');
 
 let bgmStarted = false;
@@ -72,9 +73,18 @@ function switchBGM(rank) {
   if (bgmStarted && soundSettings.bgm) bgmAudio.play().catch(() => {});
 }
 
+function playTapSFX() {
+  if (!soundSettings.sfx) return;
+  const a = sfxTapPool[sfxTapIdx++ % sfxTapPool.length];
+  a.volume = soundSettings.volume;
+  a.currentTime = 0;
+  a.play().catch(() => {});
+}
+
 function playSFX(src) {
   if (!soundSettings.sfx) return;
-  const a = new Audio(src);
+  const a = src === 'sounds/coinuse.wav' ? sfxSpend : new Audio(src);
+  if (src === 'sounds/coinuse.wav') a.currentTime = 0;
   a.volume = soundSettings.volume;
   a.play().catch(() => {});
 }
@@ -832,6 +842,7 @@ function loadGame() {
       if (elapsed > 0 && state.incomePerSec > 0) {
         const bonus = state.incomePerSec * elapsed;
         addMoney(bonus);
+        saveGame();
         return { offlineBonus: bonus, elapsed };
       }
     }
@@ -1170,6 +1181,7 @@ function buyBarUpgrade(u) {
   checkAchievements();
   playSFX('sounds/coinuse.wav');
   showToast(`${u.name} を習得しました！`);
+  saveGame();
 }
 
 // ===== Shop Panels =====
@@ -1428,6 +1440,7 @@ function buyStaffUpgrade(u) {
   checkAchievements();
   playSFX('sounds/coinuse.wav');
   showToast(`${u.name} を取得しました！`);
+  saveGame();
 }
 
 function renderUpgrades() {
@@ -1552,6 +1565,7 @@ function buyBartender(b) {
   checkAchievements();
   playSFX('sounds/coinuse.wav');
   showToast(`${b.name}を${n}人雇用しました！`);
+  saveGame();
 }
 
 function buyUpgrade(u) {
@@ -1566,12 +1580,13 @@ function buyUpgrade(u) {
   checkAchievements();
   playSFX('sounds/coinuse.wav');
   showToast(`${u.name} Lv${u.level} に強化しました！`);
+  saveGame();
 }
 
 // ===== Click Handler =====
 function onGlassClick(e) {
   tryStartBGM();
-  playSFX('sounds/glasstap_2.wav');
+  playTapSFX();
   state.totalClicks++;
   addMoney(state.clickPower);
   renderHeader();
@@ -1590,17 +1605,27 @@ function updateAffordability() {
   document.querySelectorAll('#bartender-list .shop-card').forEach(card => {
     const b = BARTENDERS.find(x => x.id === card.dataset.id);
     if (!b) return;
-    const canAfford = state.money >= bartenderCost(b);
-    card.classList.toggle('affordable', canAfford);
-    card.classList.toggle('disabled', !canAfford);
-    card.querySelector('.card-cost').textContent = fmt(bartenderCost(b));
+    const n = resolveBartenderCount(b);
+    const cost = n > 0 ? bartenderBulkCost(b, n) : bartenderCost(b);
+    const modeLabel = state.buyMode === 'max' ? `×MAX(${n})` : `×${state.buyMode}`;
+    card.classList.toggle('affordable', n > 0);
+    card.classList.toggle('disabled', n <= 0);
+    card.querySelector('.card-cost').textContent = fmt(cost);
+    const badge = card.querySelector('.buy-count-badge');
+    if (badge) badge.textContent = modeLabel;
   });
   document.querySelectorAll('#upgrade-list .shop-card').forEach(card => {
     const u = UPGRADES.find(x => x.id === card.dataset.id);
     if (!u || u.level >= u.maxLevel) return;
-    const canAfford = state.money >= upgradeCost(u);
-    card.classList.toggle('affordable', canAfford);
-    card.classList.toggle('disabled', !canAfford);
+    const n = resolveUpgradeCount(u);
+    const cost = n > 0 ? upgradeBulkCost(u, n) : upgradeCost(u);
+    const modeLabel = state.buyMode === 'max' ? `×MAX(${n})` : `×${state.buyMode}`;
+    card.classList.toggle('affordable', n > 0);
+    card.classList.toggle('disabled', n <= 0);
+    const costEl = card.querySelector('.card-cost');
+    if (costEl) costEl.textContent = fmt(cost);
+    const badge = card.querySelector('.buy-count-badge');
+    if (badge) badge.textContent = modeLabel;
   });
 }
 
@@ -1751,6 +1776,7 @@ document.addEventListener('visibilitychange', () => {
       if (elapsed >= 1 && state.incomePerSec > 0) {
         const bonus = state.incomePerSec * elapsed;
         addMoney(bonus);
+        saveGame();
         showOfflineModal(bonus, elapsed);
       }
       // tickの時間ずれをリセット
