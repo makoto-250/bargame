@@ -1,7 +1,11 @@
 {
   "permissions": {
     "allow": [
-      "Bash(Get-ChildItem -Path \"c:\\\\Users\\\\mkth2\\\\Desktop\\\\server\\\\rolipop\\\\bargeme\" -Force)"
+      "Bash(Get-ChildItem -Path \"c:\\\\Users\\\\mkth2\\\\Desktop\\\\server\\\\rolipop\\\\bargeme\" -Force)",
+      "Bash(git add *)",
+      "Bash(Copy-Item \"c:\\\\Users\\\\mkth2\\\\Desktop\\\\server\\\\rolipop\\\\bargeme\\\\game.js\" \"c:\\\\Users\\\\mkth2\\\\Desktop\\\\server\\\\rolipop\\\\bargeme\\\\www\\\\game.js\" -Force)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)"
     ]
   }
 }
