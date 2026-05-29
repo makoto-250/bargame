@@ -801,10 +801,9 @@ function _onTutorialClick(e) {
   const r  = Math.max(rect.width, rect.height) / 2 + 18;
   const dx = e.clientX - cx;
   const dy = e.clientY - cy;
-  if (dx * dx + dy * dy <= r * r) {
-    dismissTutorial();
-    onGlassClick(e);
-  }
+  const onGlass = dx * dx + dy * dy <= r * r;
+  dismissTutorial();
+  if (onGlass) onGlassClick(e);
 }
 
 function dismissTutorial() {
