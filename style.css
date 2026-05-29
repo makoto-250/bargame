@@ -1628,6 +1628,8 @@ html, body {
 }
 
 /* ===== Tutorial Overlay ===== */
+#tutorial-overlay.hidden { display: none; }
+
 #tutorial-overlay {
   position: fixed;
   inset: 0;
