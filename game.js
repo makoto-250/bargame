@@ -1781,7 +1781,7 @@ render();
 updateAchievementBadge();
 
 if (loadResult === false) {
-  requestAnimationFrame(() => showTutorial());
+  requestAnimationFrame(() => requestAnimationFrame(() => showTutorial()));
 }
 
 function showOfflineModal(bonus, elapsed) {
