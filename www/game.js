@@ -823,6 +823,49 @@ function _hideOverlay() {
     _tutorialHandler = null;
   }
   overlay.classList.add('hidden');
+  const box = document.getElementById('tutorial-highlight');
+  if (box) box.style.display = 'none';
+  const ring = document.getElementById('tutorial-ring');
+  if (ring) ring.style.display = '';
+}
+
+function _showStepRect(el, main, sub, pad, onHit) {
+  const overlay = document.getElementById('tutorial-overlay');
+  const rect = el.getBoundingClientRect();
+  overlay.style.background = 'transparent';
+
+  let box = document.getElementById('tutorial-highlight');
+  if (!box) {
+    box = document.createElement('div');
+    box.id = 'tutorial-highlight';
+    overlay.appendChild(box);
+  }
+  box.style.cssText =
+    `position:absolute;pointer-events:none;border-radius:12px;` +
+    `box-shadow:0 0 0 9999px rgba(0,0,0,0.82);` +
+    `left:${rect.left - pad}px;top:${rect.top - pad}px;` +
+    `width:${rect.width + pad * 2}px;height:${rect.height + pad * 2}px;`;
+
+  const ring = document.getElementById('tutorial-ring');
+  if (ring) ring.style.display = 'none';
+
+  document.getElementById('tutorial-main').textContent = main;
+  document.getElementById('tutorial-sub').textContent  = sub;
+  const bubble = document.getElementById('tutorial-bubble');
+  bubble.style.top    = `${rect.bottom + pad + 20}px`;
+  bubble.style.bottom = '';
+  delete bubble.dataset.pos;
+
+  if (_tutorialHandler) overlay.removeEventListener('click', _tutorialHandler);
+  _tutorialHandler = (e) => {
+    const hit = e.clientX >= rect.left - pad && e.clientX <= rect.right  + pad &&
+                e.clientY >= rect.top  - pad && e.clientY <= rect.bottom + pad;
+    _hideOverlay();
+    if (hit) onHit();
+    else tutorialStep = 0;
+  };
+  overlay.addEventListener('click', _tutorialHandler);
+  overlay.classList.remove('hidden');
 }
 
 function showTutorial() {
@@ -855,11 +898,11 @@ function checkTutorialStep1() {
         setTimeout(() => requestAnimationFrame(() => requestAnimationFrame(() => {
           const card = document.querySelector('#bartender-list .shop-card');
           if (!card) { tutorialStep = 0; return; }
-          _showStep(
+          _showStepRect(
             card,
             'バイトくんを雇いましょう',
             'タップして雇用できます',
-            'below', 20,
+            6,
             () => { tutorialStep = 0; buyBartender(BARTENDERS[0]); }
           );
         })), 320);
