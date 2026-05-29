@@ -761,22 +761,17 @@ function staffUpgradeUnlocked(u) {
 }
 
 // ===== Tutorial =====
-let tutorialActive = false;
+let tutorialStep = 0;
+let _tutorialHandler = null;
 
-function showTutorial() {
-  tutorialActive = true;
+function _applySpotlight(el, pad) {
   const overlay = document.getElementById('tutorial-overlay');
-  const glass   = document.getElementById('cocktail-glass');
-  const rect    = glass.getBoundingClientRect();
+  const rect = el.getBoundingClientRect();
   const cx = rect.left + rect.width  / 2;
   const cy = rect.top  + rect.height / 2;
-  const r  = Math.max(rect.width, rect.height) / 2 + 18;
-
+  const r  = Math.min(rect.width, rect.height) / 2 + pad;
   overlay.style.background =
-    `radial-gradient(circle at ${cx}px ${cy}px, transparent ${r}px, rgba(0,0,0,0.82) ${r + 14}px)`;
-
-  document.getElementById('tutorial-bubble').style.top = `${rect.bottom + 26}px`;
-
+    `radial-gradient(circle at ${cx}px ${cy}px, transparent ${r}px, rgba(0,0,0,0.82) ${r + 16}px)`;
   let ring = document.getElementById('tutorial-ring');
   if (!ring) {
     ring = document.createElement('div');
@@ -788,30 +783,94 @@ function showTutorial() {
   ring.style.top    = `${cy}px`;
   ring.style.width  = `${d}px`;
   ring.style.height = `${d}px`;
-
-  overlay.classList.remove('hidden');
-  overlay.addEventListener('click', _onTutorialClick);
+  return { rect, cx, cy, r };
 }
 
-function _onTutorialClick(e) {
-  const glass = document.getElementById('cocktail-glass');
-  const rect  = glass.getBoundingClientRect();
-  const cx = rect.left + rect.width  / 2;
-  const cy = rect.top  + rect.height / 2;
-  const r  = Math.max(rect.width, rect.height) / 2 + 18;
-  const dx = e.clientX - cx;
-  const dy = e.clientY - cy;
-  const onGlass = dx * dx + dy * dy <= r * r;
-  dismissTutorial();
-  if (onGlass) onGlassClick(e);
+function _showStep(el, main, sub, bubblePos, pad, onHit) {
+  const overlay = document.getElementById('tutorial-overlay');
+  const { rect, cx, cy, r } = _applySpotlight(el, pad);
+  document.getElementById('tutorial-main').textContent = main;
+  document.getElementById('tutorial-sub').textContent  = sub;
+  const bubble = document.getElementById('tutorial-bubble');
+  if (bubblePos === 'above') {
+    bubble.style.top    = `${rect.top - 12}px`;
+    bubble.style.bottom = '';
+    bubble.dataset.pos  = 'above';
+  } else {
+    bubble.style.top    = `${rect.bottom + 26}px`;
+    bubble.style.bottom = '';
+    delete bubble.dataset.pos;
+  }
+  if (_tutorialHandler) overlay.removeEventListener('click', _tutorialHandler);
+  _tutorialHandler = (e) => {
+    const dx = e.clientX - cx;
+    const dy = e.clientY - cy;
+    if (dx * dx + dy * dy <= r * r) {
+      _hideOverlay();
+      onHit(e);
+    } else {
+      dismissTutorial();
+    }
+  };
+  overlay.addEventListener('click', _tutorialHandler);
+  overlay.classList.remove('hidden');
+}
+
+function _hideOverlay() {
+  const overlay = document.getElementById('tutorial-overlay');
+  if (_tutorialHandler) {
+    overlay.removeEventListener('click', _tutorialHandler);
+    _tutorialHandler = null;
+  }
+  overlay.classList.add('hidden');
+}
+
+function showTutorial() {
+  tutorialStep = 1;
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    _showStep(
+      document.getElementById('cocktail-glass'),
+      'タップしてください',
+      'カクテルを作ってお金が稼げます',
+      'below', 18,
+      (e) => { onGlassClick(e); }
+    );
+  }));
+}
+
+function checkTutorialStep1() {
+  if (tutorialStep !== 1 || state.totalEarned < 25) return;
+  _hideOverlay();
+  tutorialStep = 2;
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    const btn = document.querySelector('.nav-btn[data-panel="panel-bartender"]');
+    _showStep(
+      btn,
+      'バーテンを雇用しましょう',
+      'バーテンダーが自動でお金を稼いでくれます',
+      'above', 14,
+      () => {
+        tutorialStep = 3;
+        openShopPanel('panel-bartender');
+        setTimeout(() => requestAnimationFrame(() => requestAnimationFrame(() => {
+          const card = document.querySelector('#bartender-list .shop-card');
+          if (!card) { tutorialStep = 0; return; }
+          _showStep(
+            card,
+            'バイトくんを雇いましょう',
+            'タップして雇用できます',
+            'below', 20,
+            () => { tutorialStep = 0; buyBartender(BARTENDERS[0]); }
+          );
+        })), 320);
+      }
+    );
+  }));
 }
 
 function dismissTutorial() {
-  if (!tutorialActive) return;
-  tutorialActive = false;
-  const overlay = document.getElementById('tutorial-overlay');
-  overlay.removeEventListener('click', _onTutorialClick);
-  overlay.classList.add('hidden');
+  tutorialStep = 0;
+  _hideOverlay();
 }
 
 // ===== Save / Load =====
@@ -1606,6 +1665,7 @@ function resolveUpgradeCount(u) {
 function addMoney(amount) {
   state.money       += amount;
   state.totalEarned += amount;
+  checkTutorialStep1();
 }
 
 function buyBartender(b) {
@@ -1780,7 +1840,7 @@ render();
 updateAchievementBadge();
 
 if (loadResult === false) {
-  requestAnimationFrame(() => requestAnimationFrame(() => showTutorial()));
+  showTutorial();
 }
 
 function showOfflineModal(bonus, elapsed) {

@@ -1649,6 +1649,10 @@ html, body {
   white-space: nowrap;
 }
 
+#tutorial-bubble[data-pos="above"] {
+  transform: translateX(-50%) translateY(-100%);
+}
+
 #tutorial-main {
   font-size: 1.05rem;
   font-weight: 700;
