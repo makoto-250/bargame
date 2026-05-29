@@ -760,6 +760,61 @@ function staffUpgradeUnlocked(u) {
   return STAFF_UPGRADES.find(x => x.id === u.requires)?.purchased ?? false;
 }
 
+// ===== Tutorial =====
+let tutorialActive = false;
+
+function showTutorial() {
+  tutorialActive = true;
+  const overlay = document.getElementById('tutorial-overlay');
+  const glass   = document.getElementById('cocktail-glass');
+  const rect    = glass.getBoundingClientRect();
+  const cx = rect.left + rect.width  / 2;
+  const cy = rect.top  + rect.height / 2;
+  const r  = Math.max(rect.width, rect.height) / 2 + 18;
+
+  overlay.style.background =
+    `radial-gradient(circle at ${cx}px ${cy}px, transparent ${r}px, rgba(0,0,0,0.82) ${r + 14}px)`;
+
+  document.getElementById('tutorial-bubble').style.top = `${rect.bottom + 26}px`;
+
+  let ring = document.getElementById('tutorial-ring');
+  if (!ring) {
+    ring = document.createElement('div');
+    ring.id = 'tutorial-ring';
+    overlay.appendChild(ring);
+  }
+  const d = (r + 6) * 2;
+  ring.style.left   = `${cx}px`;
+  ring.style.top    = `${cy}px`;
+  ring.style.width  = `${d}px`;
+  ring.style.height = `${d}px`;
+
+  overlay.classList.remove('hidden');
+  overlay.addEventListener('click', _onTutorialClick);
+}
+
+function _onTutorialClick(e) {
+  const glass = document.getElementById('cocktail-glass');
+  const rect  = glass.getBoundingClientRect();
+  const cx = rect.left + rect.width  / 2;
+  const cy = rect.top  + rect.height / 2;
+  const r  = Math.max(rect.width, rect.height) / 2 + 18;
+  const dx = e.clientX - cx;
+  const dy = e.clientY - cy;
+  if (dx * dx + dy * dy <= r * r) {
+    dismissTutorial();
+    onGlassClick(e);
+  }
+}
+
+function dismissTutorial() {
+  if (!tutorialActive) return;
+  tutorialActive = false;
+  const overlay = document.getElementById('tutorial-overlay');
+  overlay.removeEventListener('click', _onTutorialClick);
+  overlay.classList.add('hidden');
+}
+
 // ===== Save / Load =====
 const SAVE_KEY = 'barTycoon_v1';
 const SAVE_INTERVAL_MS = 10000;
@@ -1724,6 +1779,10 @@ updateKanbanDisplay();
 
 render();
 updateAchievementBadge();
+
+if (loadResult === false) {
+  requestAnimationFrame(() => showTutorial());
+}
 
 function showOfflineModal(bonus, elapsed) {
   const secs  = Math.floor(elapsed);
